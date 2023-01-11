@@ -1,0 +1,49 @@
+{
+  "timeZone": "Europe/Paris",
+  "dependencies": {
+    "enabledAdvancedServices": [],
+    "libraries": []
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/script.send_mail",
+    "https://www.googleapis.com/auth/script.external_request"
+  ],
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "DriveWatch",
+      "logoUrl": "https://cdn-icons-png.flaticon.com/512/330/330700.png",
+      "layoutProperties": {
+        "primaryColor": "#f4B41A",
+        "secondaryColor": "#DDCAE2"
+      },
+      "homepageTrigger": {
+        "runFunction": "createHomePage",
+        "enabled": true
+      },
+      "universalActions": [
+        {
+          "label": "Feedback",
+          "openLink": "https://drive.google.com/file/d/1XfTP3wBo3jYNjGIzGCCUHnRGZEXWNb4_/view?usp=share_link"
+        }
+      ],
+      "openLinkUrlPrefixes": [
+        "https://drive.google.com/file/d/1XfTP3wBo3jYNjGIzGCCUHnRGZEXWNb4_/view?usp=share_link"
+      ]
+    },
+    "drive": {
+      "homepageTrigger": {
+        "runFunction": "createHomePage",
+        "enabled": true
+      },
+      "onItemsSelectedTrigger": {
+        "runFunction": "onDriveItemsSelected"
+      }
+    }
+  }
+}
