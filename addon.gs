@@ -217,19 +217,30 @@ function createHomePage() {
   PropertiesService.getUserProperties().getKeys().filter(x => x.indexOf("folderId") > -1).forEach(function (i) {
     ids.push(i.replace("folderId_", ""))
   })
-  ids = [...new Set(ids)].forEach(function (w) {
-
-    let btnFolder = CardService.newTextButton()
-      .setText('<b><font color="#143D59">'+DriveApp.getFolderById(w).getName()+'</font><b>')
-      .setOpenLink(CardService.newOpenLink()
-        .setUrl("https://drive.google.com/drive/u/0/folders/" + w)
-        .setOpenAs(CardService.OpenAs.FULL_SIZE)
-        .setOnClose(CardService.OnClose.RELOAD)
-      )
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-      .setBackgroundColor("#f4B41A")
-    section4.addWidget(btnFolder)
-
+  Logger.log(ids)
+  if (ids.length == 0) {
+    section4.addWidget(CardService.newDecoratedText()
+      .setText("No folders watched yet")
+      .setWrapText(true)
+    )
+  }
+  ids = [...new Set(ids)]
+  ids.forEach(function (w) {
+    try {
+      let btnFolder = CardService.newTextButton()
+        .setText('<b><font color="#143D59">' + DriveApp.getFolderById(w).getName() + '</font><b>')
+        .setOpenLink(CardService.newOpenLink()
+          .setUrl("https://drive.google.com/drive/u/0/folders/" + w)
+          .setOpenAs(CardService.OpenAs.FULL_SIZE)
+          .setOnClose(CardService.OnClose.RELOAD)
+        )
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setBackgroundColor("#f4B41A")
+      section4.addWidget(btnFolder)
+    }
+    catch (e) {
+      Logger.log(e)
+    }
   })
 
   //Card builder
@@ -240,3 +251,5 @@ function createHomePage() {
     .addSection(section4)
     .build();
 }
+
+
