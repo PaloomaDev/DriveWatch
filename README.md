@@ -26,7 +26,7 @@ Then for every folder we can decide :
   - if we watch or not watch or not the entire folder depth with all subfiles and subfolders 
 
 Those options will be kept in [user properties](https://developers.google.com/apps-script/reference/properties)
-/Images/architecture.png
+![architecture](/Images/Architecture.png)
 
 In terms of user experience, the addon will have 3 cards :
   - The home page where you can find the the one when the user open the addon with explanations, frequency setting and folders watched list 
@@ -36,10 +36,10 @@ In terms of user experience, the addon will have 3 cards :
       - email and chat webhooks to send notifications
       - The option to watch or not the entire folder depth with all subfiles and subfolders 
 
-/Images/UX.png
+![ux](/Images/UX.png)
 
 Here is a little demo 
-/Images/Demo.mov
+![demo](/Images/Demo.mov)
 
  
 # Code
