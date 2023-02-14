@@ -112,7 +112,7 @@ function createSettingsFolder(e) {
     .setFieldName("listEmailForNotification").setHint("By default, only your email is notified")
     .setTitle("Email addresses separated by a comma").setMultiline(true)
     .setValue(getListEmailForNotificationOption(e.parameters.id))
-  //.setHint("john.doe@corp.com,jane.doe@corp.com");
+
   let watchSubFoldersOption = CardService.newDecoratedText()
     .setText("Watch the subfolders or only the root folder selected")
     .setWrapText(true)
@@ -126,15 +126,11 @@ function createSettingsFolder(e) {
     .setFieldName("listWebHookForNotification")
     .setTitle("Chat WebHooks separated by a comma").setMultiline(true)
     .setValue(getListWebHooksForNotificationOption(e.parameters.id))
-  //.setHint("webhook1,webhook2");
 
-  // If the add-on has access permission, 
-  //action to add the item id in the user properties
-  let textButton = checkIfFolderIsWatched(e.parameters.id)
 
   //Return 'Watch this folder' if the folder is not in user properties already
-  // If the add-on has access permission, action to add the item id in the user properties
-  Logger.log(textButton)
+  let textButton = checkIfFolderIsWatched(e.parameters.id)
+
   //add item button
   if (textButton == "Unwatch this folder") {
     textButton = "Save settings"
@@ -177,19 +173,25 @@ function createSettingsFolder(e) {
 *
 */
 function createHomePage() {
+  //create the frequency json object
   let frequencies = {
     month_frequency: false,
     twoWeek_frequency: false,
     week_frequency: false,
     day_frequency: false,
+    default_frequency: true
   }
-  Logger.log(PropertiesService.getUserProperties().getProperty("frequency"))
+  //if the frequency is not defined yet by the user, the default choice will be shown
+  //If not the default choice, will not be shown
   if (PropertiesService.getUserProperties().getProperty("frequency") != null) {
     frequencies[PropertiesService.getUserProperties().getProperty("frequency")] = true
+    frequencies.default_frequency = false
   }
+  //frequency widget
   let frequency = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setFieldName("frequency")
+    .addItem("Choose a frequency", "default", frequencies.default_frequency)
     .addItem("Once a month", "month_frequency", frequencies.month_frequency)
     .addItem("Once every 2 weeks", "twoWeek_frequency", frequencies.twoWeek_frequency)
     .addItem("Once a week", "week_frequency", frequencies.week_frequency)
@@ -210,6 +212,14 @@ function createHomePage() {
   let section2 = CardService.newCardSection().setHeader('<b><font color="#143D59">How DriveWatch works ?</font><b>').addWidget(informations2).setCollapsible(false)
   let section3 = CardService.newCardSection().setHeader('<b><font color="#143D59">Notifications frequency</font><b>').addWidget(frequency).setCollapsible(false)
   let section4 = CardService.newCardSection().setHeader('<b><font color="#143D59">Folders watched</font><b>').setCollapsible(true)
+  let sectionBonus = CardService.newCardSection().setHeader('<b><font color="#143D59">Send notifications</font><b>').addWidget(
+    CardService.newTextButton()
+      .setText('<b><font color="#143D59">Send notifications</font><b>')
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName("watchFolders")
+        .setLoadIndicator(CardService.LoadIndicator.SPINNER))
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setBackgroundColor("#f4B41A")).setCollapsible(true)
   let header = CardService.newCardHeader().setImageUrl("https://cdn-icons-png.flaticon.com/512/330/330700.png").setTitle("Drive Watch")
 
   //list of folders watched 
@@ -217,13 +227,16 @@ function createHomePage() {
   PropertiesService.getUserProperties().getKeys().filter(x => x.indexOf("folderId") > -1).forEach(function (i) {
     ids.push(i.replace("folderId_", ""))
   })
-  Logger.log(ids)
+
+
+  //If no folder watched, by default the widget will display no folder watched
   if (ids.length == 0) {
     section4.addWidget(CardService.newDecoratedText()
       .setText("No folders watched yet")
       .setWrapText(true)
     )
   }
+  //Remove duplicate ids
   ids = [...new Set(ids)]
   ids.forEach(function (w) {
     try {
@@ -249,6 +262,7 @@ function createHomePage() {
     .addSection(section2)
     .addSection(section3)
     .addSection(section4)
+    //.addSection(sectionBonus)
     .build();
 }
 
