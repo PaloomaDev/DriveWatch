@@ -1,10 +1,7 @@
 {
   "timeZone": "Europe/Paris",
-  "dependencies": {
-    "enabledAdvancedServices": [],
-    "libraries": []
-  },
   "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
   "oauthScopes": [
     "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
     "https://www.googleapis.com/auth/drive.readonly",
@@ -13,7 +10,9 @@
     "https://www.googleapis.com/auth/script.send_mail",
     "https://www.googleapis.com/auth/script.external_request"
   ],
-  "runtimeVersion": "V8",
+  "urlFetchWhitelist": [
+    "https://chat.googleapis.com/"
+  ],
   "addOns": {
     "common": {
       "name": "DriveWatch",
@@ -29,11 +28,11 @@
       "universalActions": [
         {
           "label": "Feedback",
-          "openLink": "https://drive.google.com/file/d/1XfTP3wBo3jYNjGIzGCCUHnRGZEXWNb4_/view?usp=share_link"
+          "openLink": "mailto:ta-palooma@palooma.fr?Subject=Addon_DriveWatch"
         }
       ],
       "openLinkUrlPrefixes": [
-        "https://drive.google.com/file/d/1XfTP3wBo3jYNjGIzGCCUHnRGZEXWNb4_/view?usp=share_link"
+        "https://chat.googleapis.com/"
       ]
     },
     "drive": {
