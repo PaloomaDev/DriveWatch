@@ -23,15 +23,16 @@ function watchFolders() {
       frequency = 1
       break
   }
-  //Define the date from which we will filter by creation date the folders and files 
-  let previousWatchDate = new Date().getTime() - frequency * 60 * 60 * 1000
-
+  Logger.log(frequency)
+  //Défine the date from which we will filter by creation date the folders and files 
+  let previousWatchDate = new Date().getTime() - frequency * 24 * 60 * 60 * 1000
   //list all folders watched  
   getFilesAndFolders()
+  Logger.log(listFoldersAndFiles)
 
   //Filter with the threshold date
-  let newFilesFolders = listFoldersAndFiles.filter(x => x[3] > previousWatchDate)
-
+  let newFilesFolders = listFoldersAndFiles.filter(x => new Date(x[3]) > new Date(previousWatchDate))
+  Logger.log(newFilesFolders)
   //Remove the duplicate line by the folder name. This will avoid to send several notification for one folder watched
   //since we are sending one notification by folder watched
   let foldersWatched = newFilesFolders.filter(function (a) {
@@ -45,13 +46,12 @@ function watchFolders() {
 
     let htmlTable = ""
     let listButtons = []
-    //Filter on all the news folders and files related to the current folder
+    //Filter on all the new folders and files related to the current folder
     newFilesFolders.filter(x => x[0] == f[0]).forEach(function (t) {
       //Create the mail notification content
       htmlTable += '<tr><td style="width: 60%; text-align: center;"><a title="' + t[1]
         + '" href="' + t[2] + '" target="_blank">' + t[1] + '</a></td> <td style="width: 40%; text-align: center;">'
         + Utilities.formatDate(t[3], Session.getScriptTimeZone(), "dd/MM/YYYY hh:mm") + '</td></tr>'
-
       //Create the chat notification content 
       listButtons.push({
         "text": t[1],
@@ -65,18 +65,28 @@ function watchFolders() {
 
     //mail sending
     let tmp = HtmlService.createTemplateFromFile('mail')
-    tmp.table = htmlTable
+    tmp.table = '<tr><td style="width: 60%; text-align: center;"><a title="' + "t[1]"
+        + '" href="' + t[2] + '" target="_blank">' + t[1] + '</a></td> <td style="width: 40%; text-align: center;">'
+        + Utilities.formatDate(t[3], Session.getScriptTimeZone(), "dd/MM/YYYY hh:mm") + '</td></tr>'
     try {
       MailApp.sendEmail(Session.getActiveUser().getEmail() + "," + f[5], "[" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/YYYY") + "] Drive Watch Addon : new activity in " + f[0], "", { htmlBody: tmp.evaluate().getContent() })
     }
     catch (e) {
-      Logger.log(e)
+      //In case of wrong emails set up 
       MailApp.sendEmail(Session.getActiveUser().getEmail(), "[" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/YYYY") + "] Drive Watch Addon : new activity in " + f[0], "Be careful, wrong emails have been registered for notifications", { htmlBody: tmp.evaluate().getContent() })
     }
     //chat sending
-    sendChatNotification(listButtons, f[0], f[4])
+    try {
+      sendChatNotification(listButtons, f[0], f[4])
+    }
+    catch (e) {
+      //In case of wrong webhooks set up 
+      MailApp.sendEmail(Session.getActiveUser().getEmail(), "[" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/YYYY") + "] Drive Watch Addon : new activity in " + f[0], "Be careful, wrong chat webhooks have been registered for notifications", { htmlBody: tmp.evaluate().getContent() })
+    }
   })
 }
+
+
 /*******************************************************************************************************
 * This function set the folders watching parameters
 * ******************************************************************************************************
@@ -84,7 +94,9 @@ function watchFolders() {
 * @return {card} the card to display with the new settings
 */
 function setWatchingParameterToFolder(e) {
-  //Check if the folder id is not already in the user properties. If it's the case then remove the folderId from the properties
+  //Check if the folder id is not already in the user properties. 
+  //If it's the case then remove the folderId from the properties
+  //If not add all properties selected by user
   switch (e.parameters.state) {
     case "Unwatch this folder":
       deleteAllPropertiesForFolder(e.parameters.id)
@@ -96,12 +108,13 @@ function setWatchingParameterToFolder(e) {
     default:
       deleteAllPropertiesForFolder(e.parameters.id)
   }
+  //return the card when the folder is selected
   return CardService.newUniversalActionResponseBuilder().displayAddOnCards([onDriveItemsSelected(e)]).build()
 }
 
 
 /*******************************************************************************************************
-* This function give the text according to the folder status : watched or not watched. That is the question
+* This function give the text according to the folder status : watched or not watched
 * ******************************************************************************************************
 * @param {string} id: folder id
 * @return {string} text to add in the card button
@@ -111,6 +124,7 @@ function checkIfFolderIsWatched(id) {
   for (var i in PropertiesService.getUserProperties().getProperties()) {
     propertiesUser.push([i, PropertiesService.getUserProperties().getProperties()[i]])
   }
+  //If the folider id is in user properties --> unwatch this folder 
   let text = propertiesUser.filter(x => x[1] == id).length > 0 ? 'Unwatch this folder' : 'Watch this folder'
   return text
 }
@@ -130,7 +144,7 @@ function deleteAllPropertiesForFolder(id) {
 
 
 /*******************************************************************************************************
-* Those functions get all the settings for a folder
+* Those functions get emails notification setting for a folder
 * ******************************************************************************************************
 * @param {string} id: folder id
 * @return {string} property 
@@ -139,13 +153,26 @@ function getListEmailForNotificationOption(id) {
   return PropertiesService.getUserProperties().getProperty('listEmailForNotification_' + id) == null ? "" : PropertiesService.getUserProperties().getProperty('listEmailForNotification_' + id)
 }
 
+/*******************************************************************************************************
+* Those functions get watch subfolder setting for a folder
+* ******************************************************************************************************
+* @param {string} id: folder id
+* @return {string} property 
+*/
 function getWatchingSubFolderOption(id) {
   return PropertiesService.getUserProperties().getProperty('watchingSubFolder_' + id) == "watchingSubFolderOn" ? true : false
 }
 
+/*******************************************************************************************************
+* Those functions get webhooks notification setting for a folder
+* ******************************************************************************************************
+* @param {string} id: folder id
+* @return {string} property 
+*/
 function getListWebHooksForNotificationOption(id) {
   return PropertiesService.getUserProperties().getProperty('listWebHookForNotification_' + id) == null ? "" : PropertiesService.getUserProperties().getProperty('listWebHookForNotification_' + id)
 }
+
 /*******************************************************************************************************
 * This function set up the properties for a folder from the card inputs
 * ******************************************************************************************************
@@ -269,6 +296,8 @@ function setNotificationFrequency(e) {
     case "day_frequency":
       ScriptApp.newTrigger("watchFolders").timeBased().everyDays(1).create()
       break
+    default:
+      Logger.log("No frequency choosen");
   }
 }
 
