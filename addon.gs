@@ -1,5 +1,5 @@
 
-
+///addon.gs
 /**
  * Build a simple card that checks selected items' quota usage. Checking
  * quota usage requires user-permissions, so this add-on provides a button
